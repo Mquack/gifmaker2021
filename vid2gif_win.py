@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 
-
-import moviepy.editor as mpy
+#import moviepy.editor as mpy
 import tkinter as tk
 from tkinter import filedialog
 import os
+from moviepy.video.io.VideoFileClip import VideoFileClip
+
 
 
 cwd = os.getcwd()
@@ -99,7 +100,8 @@ class Giffer:
         self.quitBtn.pack(side=tk.LEFT, pady=(0, 20))
 
     def calcNewSize(val, self):
-        videoFile = mpy.VideoFileClip(val.fileName)
+        #videoFile = mpy.VideoFileClip(val.fileName)
+        videoFile = VideoFileClip(val.fileName)
         height = int(self)
         width = videoFile.w * (height / videoFile.h)
         val.newSizeLabel.configure(text=str(int(width)) + "x" + str(height))
@@ -118,7 +120,8 @@ class Giffer:
         self.fileName = filedialog.askopenfilename(initialdir="/home", title="Select video file", filetypes=(
         ("mp4", "*.mp4"), ("mkv", "*.mkv"), ("mpeg", "*.mpeg"), ("avi", "*.avi"), ("mov", "*.mov"), ("all", "*.*")))
         try:
-            videoFile = mpy.VideoFileClip(self.fileName)
+            #videoFile = mpy.VideoFileClip(self.fileName)
+            videoFile = VideoFileClip(self.fileName)
         except:
             self.fileName = ""
             return
@@ -185,7 +188,8 @@ class Giffer:
         else:
             nameOfGif += ".gif"
 
-        video = (mpy.VideoFileClip(self.fileName))
+        #video = (mpy.VideoFileClip(self.fileName))
+        video = (VideoFileClip(self.fileName))
 
         videoCutDown = round(self.endSlider.get() - self.startSlider.get(), 2)
 
@@ -221,7 +225,8 @@ class Giffer:
         if self.continueConversion:
             try:
                 if (video.duration != videoCutDown):
-                    video = (mpy.VideoFileClip(self.fileName).subclip((self.startSlider.get()), (self.endSlider.get())))
+                    #video = (mpy.VideoFileClip(self.fileName).subclip((self.startSlider.get()), (self.endSlider.get())))
+                    video = (VideoFileClip(self.fileName).subclip((self.startSlider.get()), (self.endSlider.get())))
                 if video.h != self.sizeSlide.get():
                     video = video.resize(height=self.sizeSlide.get())
 
