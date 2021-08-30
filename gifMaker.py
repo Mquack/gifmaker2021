@@ -1,16 +1,13 @@
 #!/usr/bin/python3
 
-#import moviepy.editor as mpy
+from moviepy.video.io.VideoFileClip import VideoFileClip
+from moviepy.video.fx.resize import resize
 import tkinter as tk
 from tkinter import filedialog
 import os
-from moviepy.video.io.VideoFileClip import VideoFileClip
+from platform import system as thisSystemIs
 
 
-
-cwd = os.getcwd()
-
-#Windows version
 class Giffer:
 
     def __init__(self, mainWindow):
@@ -86,7 +83,6 @@ class Giffer:
 
         self.outputText.configure(state='normal')
         self.outputText.insert(tk.END, "                ")
-        # self.outputText.image_create(tk.END, image = self.image_)
         self.outputText.image_create(tk.END, image=self.bgImg)
         self.outputText.insert(tk.END, "\n")
         self.outputText.configure(state='disabled')
@@ -99,31 +95,29 @@ class Giffer:
         self.quitBtn = tk.Button(mainFrame, text="Quit", command=mainWindow.quit)
         self.quitBtn.pack(side=tk.LEFT, pady=(0, 20))
 
-    def calcNewSize(val, self):
-        #videoFile = mpy.VideoFileClip(val.fileName)
-        videoFile = VideoFileClip(val.fileName)
-        height = int(self)
+    def calcNewSize(self, val):
+        videoFile = VideoFileClip(self.fileName)
+        height = int(val)
         width = videoFile.w * (height / videoFile.h)
-        val.newSizeLabel.configure(text=str(int(width)) + "x" + str(height))
+        self.newSizeLabel.configure(text=str(int(width)) + "x" + str(height))
 
     def moveStartSlider(self, val):
-        #maxValue = float(self.endSlider.get()) - 1.0
         maxValue = float(val) -1.0
         self.startSlider.configure(to=maxValue)
 
     def moveEndSlider(self, val):
-        #minValue = float(self.startSlider.get()) + 1.0
         minValue = float(val) + 1.0
         self.endSlider.configure(from_=(minValue))
 
     def browseFile(self):
-        self.fileName = filedialog.askopenfilename(initialdir="/home", title="Select video file", filetypes=(
-        ("mp4", "*.mp4"), ("mkv", "*.mkv"), ("mpeg", "*.mpeg"), ("avi", "*.avi"), ("mov", "*.mov"), ("all", "*.*")))
+        self.fileName = filedialog.askopenfilename(initialdir="/home/x1mq/Downloads/", title="Select video file",
+                                                   filetypes=(("mp4", "*.mp4"), ("mkv", "*.mkv"), ("mpeg", "*.mpeg"),
+                                                              ("avi", "*.avi"), ("mov", "*.mov"), ("all", "*.*")))
         try:
-            #videoFile = mpy.VideoFileClip(self.fileName)
             videoFile = VideoFileClip(self.fileName)
         except:
             self.fileName = ""
+            self.popUps("Invalid file selected.")
             return
 
         self.fileText.configure(state='normal')
@@ -152,7 +146,7 @@ class Giffer:
         self.newSizeLabel.pack()
 
     def browseDir(self):
-        self.dirName = filedialog.askdirectory(initialdir="/home/")
+        self.dirName = filedialog.askdirectory(initialdir="/home/x1mq/Downloads/")
         self.dirText.configure(state='normal')
         self.dirText.delete(1.0, tk.END)
         self.dirText.insert(tk.END, self.dirName)
@@ -161,7 +155,7 @@ class Giffer:
     def popUps(self, val):
         popup = tk.Toplevel()
         popup.geometry("300x125")
-        # popup.wm_title("Unexpected problem")
+        popup.wm_title("Wake up!")
         popupLabel = tk.Label(popup, text="Unexpected problem..")
         popupLabel.pack(pady=(10, 10))
         popInfo = val
@@ -169,42 +163,36 @@ class Giffer:
         label.pack()
         okBtn = tk.Button(popup, text="OK", command=popup.destroy)
         okBtn.pack(pady=(20, 20))
-        # popup.mainloop()
 
     def convertFile(self):
         if len(self.fileName) < 1:
             self.popUps("Select video to continue.")
-            print("no filename")
             return
 
         if len(self.dirName) < 1:
             self.popUps("Select directory to continue.")
-            print("no directory")
             return
 
+        #Disable self.convertBtn, the button that runs the function.
+        self.convertBtn.config(state=tk.DISABLED)
+
         nameOfGif = self.gifNameText.get("1.0", "end-1c")
+
         if len(nameOfGif) < 1:
             nameOfGif = "default.gif"
         else:
             nameOfGif += ".gif"
 
-        #video = (mpy.VideoFileClip(self.fileName))
-        video = (VideoFileClip(self.fileName))
+        video = VideoFileClip(self.fileName)
 
         videoCutDown = round(self.endSlider.get() - self.startSlider.get(), 2)
 
         self.outputText.configure(state='normal')
-        print("Filename: ", self.fileName)
         self.outputText.insert(tk.END, "Filename: " + self.fileName + '\n')
-        print("Directory: ", self.dirName)
         self.outputText.insert(tk.END, "Directory: " + self.dirName + '\n')
-        print("Video length: ", round(self.endSlider.get() - self.startSlider.get(), 2))
         self.outputText.insert(tk.END, "Video length: " + str(videoCutDown) + '\n')
-        print("FPS: ", self.fpsSlider.get())
         self.outputText.insert(tk.END, "FPS: " + str(self.fpsSlider.get()) + '\n')
-        print("Resolution: ", self.sizeSlide.get())
         self.outputText.insert(tk.END, "Resolution: " + str(self.sizeSlide.get()) + '\n')
-        print("GIF name:", nameOfGif)
         self.outputText.insert(tk.END, "GIF name: " + nameOfGif + '\n' + '\n')
         self.outputText.see(tk.END)
         self.outputText.configure(state='disabled')
@@ -225,13 +213,13 @@ class Giffer:
         if self.continueConversion:
             try:
                 if (video.duration != videoCutDown):
-                    #video = (mpy.VideoFileClip(self.fileName).subclip((self.startSlider.get()), (self.endSlider.get())))
-                    video = (VideoFileClip(self.fileName).subclip((self.startSlider.get()), (self.endSlider.get())))
+                    video = VideoFileClip(self.fileName).subclip((self.startSlider.get()), (self.endSlider.get()))
                 if video.h != self.sizeSlide.get():
-                    video = video.resize(height=self.sizeSlide.get())
+                    newVideoHeight = self.sizeSlide.get()
+                    resizedVideo = resize(video, height = newVideoHeight)
 
                 os.chdir(self.dirName)
-                video.write_gif(nameOfGif, fps=self.fpsSlider.get(), program="ffmpeg")
+                resizedVideo.write_gif(nameOfGif, fps=self.fpsSlider.get(), program="ffmpeg")
                 os.chdir(self.cwd)
 
                 self.outputText.configure(state='normal')
@@ -241,13 +229,23 @@ class Giffer:
                 self.outputText.configure(state='disabled')
 
                 self.gifNameText.delete('1.0', tk.END)
-            except:
+            except Exception as e:
+                print(e)
                 self.outputText.insert(tk.END, "OH NO! Something went wrong! *Visible disgust*\n\n")
                 self.outputText.configure(state='disabled')
+
+            #Conversion should be complete, Enable
+            self.convertBtn.config(state=tk.NORMAL)
 
 
 root = tk.Tk(className='GifMaker')
 root.title("GifMaker 2021 v 0.1")
-root.iconbitmap("vis_gust_small_icon.ico")
+myOS = thisSystemIs()
+
+if (myOS == "Linux"):
+    root.iconphoto(False, tk.PhotoImage(file='vis_gust.png'))
+elif (myOS == "Windows"):
+    root.iconbitmap("vis_gust_small_icon.ico")
+
 app = Giffer(root)
 root.mainloop()
